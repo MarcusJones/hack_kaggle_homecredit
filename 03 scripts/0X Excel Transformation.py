@@ -12,8 +12,21 @@ TRANSFORMER_MAPPING = {
 #%% Get Excel transformer plan
 
 xl = pd.ExcelFile(os.path.join(PATH_PROJECT_ROOT,'all columns.xlsx'))
+trf_plans = dict()
 for sheet in xl.sheet_names:  # see all sheet names
-    logging.debug("".format())
+    trf_plans[sheet] = xl.parse(sheet)
+    
+    kept_col_count = int(trf_plans[sheet]['Keep'].dropna().sum())
+    #.astype(int)
+    logging.debug("{:>30}, processing {:>4} columns".format(sheet,kept_col_count))
+    
+# Make sure there is alignment betweent the loaded dataframes and the plans
+for k in trf_plans:
+    assert k in dfs.keys()
+
+#%%
+    
+    
 
 df_features = pd.read_excel(os.path.join(PATH_PROJECT_ROOT,'all columns.xlsx'))
 df_features["Transformer 1"].fillna("",inplace=True)
