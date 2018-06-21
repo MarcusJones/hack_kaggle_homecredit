@@ -46,11 +46,10 @@ for k in dfs:
     
 #%% Create a summary of each dataframe and their columns
 if 0:
-    create_column_summary
-        df_summaries = dict()
-        for df_name in dfs:
-            df_summaries[df_name] = exergyml_util_other.create_column_summary(dfs[df_name])
-            #print(k)
+    df_summaries = dict()
+    for df_name in dfs:
+        df_summaries[df_name] = exergyml_util_other.create_column_summary(dfs[df_name])
+        #print(k)
 
 #%% Print summaries to excel
 if 0:
@@ -73,6 +72,7 @@ del_vars =[
         "column_names",
         "path_data",
         "util_path",
+        "k"
         ]
 cnt = 0
 for name in dir():
