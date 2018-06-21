@@ -1,5 +1,38 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+ 
+from MachineLearning import util_other as exergyml_util_other
+import MachineLearning
+import sklearn_pandas as skpd 
+import time
+import os
+import yaml
+import sys
+
+#%% Logging
+import logging
+#Delete Jupyter notebook root logger handler
+logger = logging.getLogger()
+logger.handlers = []
+
+# Set level
+logger.setLevel(logging.DEBUG)
+
+# Create formatter
+#FORMAT = "%(asctime)s - %(levelno)-3s - %(module)-10s  %(funcName)-10s: %(message)s"
+#FORMAT = "%(asctime)s - %(levelno)-3s - %(funcName)-10s: %(message)s"
+#FORMAT = "%(asctime)s - %(funcName)-10s: %(message)s"
+FORMAT = "%(asctime)s : %(message)s"
+DATE_FMT = "%Y-%m-%d %H:%M:%S"
+#DATE_FMT = "%H:%M:%S"
+formatter = logging.Formatter(FORMAT, DATE_FMT)
+
+# Create handler and assign
+handler = logging.StreamHandler(sys.stderr)
+handler.setFormatter(formatter)
+logger.handlers = [handler]
+logging.debug("Logging started")
+
 
 #%% Globals
 
@@ -20,158 +53,27 @@ PATH_PROJECT_ROOT = r"/home/batman/git/hack_kaggle_homecredit/03 scripts"
 #plt.rc('font', family='Helvetica')
 
 
-#%% Function to calculate missing values by column# Funct 
-def missing_values_table(df):
-        # Total missing values
-        mis_val = df.isnull().sum()
-        
-        # Percentage of missing values
-        mis_val_percent = 100 * df.isnull().sum() / len(df)
-        
-        # Make a table with the results
-        mis_val_table = pd.concat([mis_val, mis_val_percent], axis=1)
-        
-        # Rename the columns
-        mis_val_table_ren_columns = mis_val_table.rename(
-        columns = {0 : 'Missing Values', 1 : '% of Total Values'})
-        
-        # Sort the table by percentage of missing descending
-        mis_val_table_ren_columns = mis_val_table_ren_columns[
-            mis_val_table_ren_columns.iloc[:,1] != 0].sort_values(
-        '% of Total Values', ascending=False).round(1)
-        
-        # Print some summary information
-        print ("Your selected dataframe has " + str(df.shape[1]) + " columns.\n"      
-            "There are " + str(mis_val_table_ren_columns.shape[0]) +
-              " columns that have missing values.")
-        
-        # Return the dataframe with missing information
-        return mis_val_table_ren_columns
+#%% Missing vals
+exergyml_util_other.missing_values_table
 
-#%%
-def strfdelta(tdelta, fmt):
-    d = {"days": tdelta.days}
-    d["hours"], rem = divmod(tdelta.seconds, 3600)
-    d["minutes"], d["seconds"] = divmod(rem, 60)
-    return fmt.format(**d)
+#%% Format a time delta
+exergyml_util_other.strfdelta
 
-#%%
-def plot_confusion_matrix(cm, classes,
-                          normalize=False,
-                          title='Confusion matrix',
-                          cmap=plt.cm.Blues):
-    """
-    This function prints and plots the confusion matrix.
-    Normalization can be applied by setting `normalize=True`.
-    """
-    if normalize:
-        cm = cm.astype('float') / cm.sum(axis=1)[:, np.newaxis]
-        print("Normalized confusion matrix")
-    else:
-        print('Confusion matrix, without normalization')
-
-    print(cm)
-    
-    fig, ax = plt.subplots(figsize=LANDSCAPE_A4)         # Sample figsize in inches
+#%% Column summaries
+exergyml_util_other.create_column_summary
 
 
+#%% Convert object to category
+exergyml_util_other.convert_categorical
 
-    plt.style.use('ggplot')
-
-
-#sns.heatmap(addr_cross_cat, linewidths=.5,cmap='jet');
-#sns.heatmap(addr_cross_cat, linewidths=.5,cmap = cmap,ax=ax)
-#plt.tight_layout(pad=5)
-#plt.suptitle(title_str,fontname = 'Arial', fontsize=16)
-#plt.title("{} to {}, {} records".format(min_time,max_time,num_recs))
-
-    plt.imshow(cm, interpolation='nearest', cmap=cmap)
-    plt.title(title)
-    plt.colorbar()
-    tick_marks = np.arange(len(classes))
-    plt.xticks(tick_marks, classes, rotation=45)
-    plt.yticks(tick_marks, classes)
-    #plt.tight_layout()
-    plt.ylabel('True label')
-    plt.xlabel('Predicted label')
-    plt.tight_layout(pad=5)
-
-#    fmt = '.2f' if normalize else 'd'
-#    thresh = cm.max() / 2.
-#    for i, j in itertools.product(range(cm.shape[0]), range(cm.shape[1])):
-#        plt.text(j, i, format(cm[i, j], fmt),
-#                 horizontalalignment="center",
-#                 color="white" if cm[i, j] > thresh else "black")
-
-
+#%% Print and plot confusion matrix
+exergyml_util_other.plot_confusion_matrix
 
 #%% SKLEARN
-def grid_scores_to_df(grid_scores):
-    """
-    Convert a sklearn.grid_search.GridSearchCV.grid_scores_ attribute to a tidy
-    pandas DataFrame where each row is a hyperparameter-fold combinatination.
-    """
-    rows = list()
-    for i,grid_score in enumerate(grid_scores):
-        
-        for fold, score in enumerate(grid_score.cv_validation_scores):
-            #row = dict()
-            row = grid_score.parameters.copy()
-            row['param_set'] = i
-            row['fold'] = fold
-            row['score'] = score
-            rows.append(row)
-    df = pd.DataFrame(rows)
-    return df
-
+exergyml_util_other.grid_scores_to_df
 
 #%% Cmap mapper
-# http://scipy-cookbook.readthedocs.io/items/Matplotlib_ColormapTransformations.html
-
-def cmap_map(function, cmap):
-    """ Applies function (which should operate on vectors of shape 3: [r, g, b]), on colormap cmap.
-    This routine will break any discontinuous points in a colormap.
-    """
-    cdict = cmap._segmentdata
-    step_dict = {}
-    # Firt get the list of points where the segments start or end
-    for key in ('red', 'green', 'blue'):
-        step_dict[key] = list(map(lambda x: x[0], cdict[key]))
-    step_list = sum(step_dict.values(), [])
-    step_list = np.array(list(set(step_list)))
-    # Then compute the LUT, and apply the function to the LUT
-    reduced_cmap = lambda step : np.array(cmap(step)[0:3])
-    old_LUT = np.array(list(map(reduced_cmap, step_list)))
-    new_LUT = np.array(list(map(function, old_LUT)))
-    # Now try to make a minimal segment definition of the new LUT
-    cdict = {}
-    for i, key in enumerate(['red','green','blue']):
-        this_cdict = {}
-        for j, step in enumerate(step_list):
-            if step in step_dict[key]:
-                this_cdict[step] = new_LUT[j, i]
-            elif new_LUT[j,i] != old_LUT[j, i]:
-                this_cdict[step] = new_LUT[j, i]
-        colorvector = list(map(lambda x: x + (x[1], ), this_cdict.items()))
-        colorvector.sort()
-        cdict[key] = colorvector
-
-    return matplotlib.colors.LinearSegmentedColormap('colormap',cdict,1024)
+exergyml_util_other.cmap_map
 
 #%% Get countours
-
-def get_contour_verts(cn):
-    contours = []
-    # for each contour line
-    for cc in cn.collections:
-        paths = []
-        # for each separate section of the contour line
-        for pp in cc.get_paths():
-            xy = []
-            # for each segment of that section
-            for vv in pp.iter_segments():
-                xy.append(vv[0])
-            paths.append(np.vstack(xy))
-        contours.append(paths)
-
-    return contours
+exergyml_util_other.get_contour_verts
