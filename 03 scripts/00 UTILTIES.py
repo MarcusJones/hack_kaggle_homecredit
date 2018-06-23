@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
- 
+
 from MachineLearning import util_other as exergyml_util_other
-import MachineLearning
+from MachineLearning import util_sk_transformers as exergyml_transformers
 import sklearn_pandas as skpd 
 import time
 import os
@@ -52,6 +52,12 @@ PATH_PROJECT_ROOT = r"/home/batman/git/hack_kaggle_homecredit/03 scripts"
 #TITLE_FONT_NAME = "Arial"
 #plt.rc('font', family='Helvetica')
 
+#%%
+exergyml_transformers.Imputer1D
+
+
+#%%
+exergyml_util_other.strfdelta
 
 #%% Missing vals
 exergyml_util_other.missing_values_table
@@ -61,7 +67,6 @@ exergyml_util_other.strfdelta
 
 #%% Column summaries
 exergyml_util_other.create_column_summary
-
 
 #%% Convert object to category
 exergyml_util_other.convert_categorical
