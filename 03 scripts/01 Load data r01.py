@@ -8,19 +8,20 @@ import pandas as pd
 #%% ===========================================================================
 #  Data source and paths
 # =============================================================================
-path_data = os.path.join(PATH_DATA_ROOT,"ZIP", r"")
+path_data = os.path.join(PATH_DATA_ROOT, r"")
 assert os.path.exists(path_data), path_data
 logging.info("Data path {}".format(PATH_DATA_ROOT))
 
-PATH_DATA_ROOT=os.path.join(PATH_DATA_ROOT,"ZIP")
-
-#%% List the directory
+# List the directory
 files = os.listdir(PATH_DATA_ROOT)
-file_dict = dict([(f.split('.')[0], os.path.join(PATH_DATA_ROOT,f)) for f in files])
+file_list = [(f.split('.')[0], os.path.join(PATH_DATA_ROOT,f)) for f in files]
+file_list = [f for f in file_list if os.path.isfile(f[1])]
+file_dict = dict(file_list)
+#file_dict = 
 
 for file in file_dict:
-    print(file,file_dict[file])
-
+    print(file)
+    file_dict[file]
 
 #%% Column descriptions
 df_desc = pd.read_csv(file_dict['HomeCredit_columns_description'], 
@@ -45,8 +46,14 @@ def get_all_data(file_dict,sample_frac):
     for file in file_dict:
         start_time = time.time()
         logging.debug("Loading {}".format(file))
-        dfs[file] = pd.read_csv(file_dict[file], compression='zip', header=0, sep=',', quotechar='"')
+        #dfs[file] = pd.read_csv(file_dict[file], compression='zip', header=0, sep=',', quotechar='"')
+        dfs[file] = pd.read_hdf(file_dict[file],  'data')
         logging.debug("\tLoaded {} with {} rows and {} cols".format(file, dfs[file].shape[0], dfs[file].shape[1]))        
+        
+        # Sample the data, if needed
+        if not(sample_frac == 1):
+            dfs[file] = dfs[file].sample(frac=sample_frac)
+            logging.debug("\tSubsampled {} to {} rows".format(file, len(dfs[file])))
         
         dfs[file] = exergyml_util_other.convert_categorical(dfs[file])
         logging.debug("\tDone loading {}, {:.0f} seconds".format(file,time.time() - start_time))        
@@ -58,14 +65,25 @@ def get_all_data(file_dict,sample_frac):
 dfs = get_all_data(file_dict,DATA_SAMPLE)
 
 for k in dfs:
-    print(k)
+    print(k, dfs[k].shape)
+
 
 #%% Split off the TARGET column
 
 train_Y = dfs['application_train'].TARGET
 dfs['application_train'] = dfs['application_train'].drop('TARGET', 1)
+    
+#%% Write the CSV dataframes to HDF5
+if 0:
+    for file in dfs:
+        #dfs[file]
+        file_path = file_dict[file]
+        fname,_ = os.path.splitext(file_path)
+        fname,_ = os.path.splitext(fname)
+        fname += ".h5"
+        logging.debug("Writing {}, {} rows, cols, to {}".format(file,dfs[file].shape,fname))
+        dfs[file].to_hdf(fname, 'data', format='table')
 
-       
 #%% Create a summary of each dataframe and their columns
 if 0:
     df_summaries = dict()
