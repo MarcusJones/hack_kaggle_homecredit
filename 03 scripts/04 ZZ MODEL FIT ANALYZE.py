@@ -41,8 +41,8 @@ logging.debug("Subset for Grid Search, {} rows".format(len(sample_rows)))
 
 #%% Final sizing
 
-print("train_X",train_X.shape)
-print("train_Y",train_Y.shape)
+print("train_X",train_X.shape,"Reduced for grid:", train_X.loc[sample_rows,:].shape)
+print("train_Y",train_Y.shape,"Reduced for grid:->", train_Y.loc[sample_rows].shape)
 print("test_X",test_X.shape)
 
 #%% Fit
@@ -103,14 +103,7 @@ predicted = clf_grid_BEST.fit(train_X, train_Y)
 
 
 #%% Predict on Test set
-# Now that the model has been trained, we can use it to make predictions. We 
-# want to predict the probabilities of not paying a loan, so we use the model 
-# predict.proba method. This returns an m x 2 array where m is the number of 
-# observations. The first column is the probability of the target being 0 and the
-# second column is the probability of the target being 1 (so for a single row, 
-# the two columns must sum to 1). We want the probability the loan is not repaid, 
-# so we will select the second column.
-
+# NB we only want the defaulters column! 
 predicted = clf_grid_BEST.predict_proba(test_X)[:,1]
 
 #%% Submission dataframe
@@ -120,7 +113,7 @@ submit['TARGET'] = predicted
 submit.head()
 
 # Save the submission to a csv file
-submit.to_csv('log_reg_baseline_allcols.csv', index = False)
+submit.to_csv('log_reg_baseline5.csv', index = False)
 
 #%% Results on TEST
 

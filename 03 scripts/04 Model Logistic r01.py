@@ -10,11 +10,12 @@ MODEL_STRING = "Logistic Regression"
 clf = sk.linear_model.LogisticRegression(penalty='l2', 
                                          dual=False, 
                                          tol=0.0001, 
-                                         C=1.0, 
+                                         C=1.0, # Regularization strength (inverse)
                                          fit_intercept=True, 
                                          intercept_scaling=1, 
                                          class_weight=None, 
                                          random_state=None, 
+                                         #solver='sag', 
                                          solver='liblinear', 
                                          max_iter=100, 
                                          multi_class='ovr', 
@@ -26,9 +27,9 @@ clf = sk.linear_model.LogisticRegression(penalty='l2',
 param_grid = {
     #'penalty': ['l2','l1'],
     'penalty': ['l2'],
-    'class_weight': [None,'balanced'],
-    'fit_intercept': [True, False],
-    'C':[0.25, 0.5,0.75,1.0]
+    'class_weight': ['balanced'], #[None,'balanced'],
+    #'fit_intercept': [True, False],
+    'C':[0.25, 0.5,0.7, 0.75, 0.8, 0.85, 0.9, 1.0]
     #'alpha': [10 ** x for x in range(-4, -2)],
     #'l1_ratio': [ 0.15], NOT NEEDED UNLESS ELASTIC
     #'max_iter': [1000],

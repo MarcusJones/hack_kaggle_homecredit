@@ -1,6 +1,7 @@
 import pandas as pd 
 
 #%% Transformer mappings
+
 TRANSFORMER_MAPPING = {
     'LabelBinarizer'        : sk.preprocessing.LabelBinarizer,
     'LabelEncoder'          : sk.preprocessing.LabelEncoder,
@@ -9,8 +10,8 @@ TRANSFORMER_MAPPING = {
     'CategoricalImputer'    : skpd.CategoricalImputer,
     'Imputer'               : sk.preprocessing.Imputer,
     'Imputer1D'             : exergyml_transformers.Imputer1D,
+    'BinaryEncoder'        : ce.BinaryEncoder,
     }
-
 dir(sk.preprocessing.LabelBinarizer)
 sk.preprocessing.LabelBinarizer.__class__
 
@@ -117,6 +118,9 @@ for k in trf_plans:
 #                print("(Keep)", end="")
 #            print()
 
+
+
+
 #%% Process the pipelines
 
 dfs_transformed = dict()
@@ -137,22 +141,121 @@ for k in dfs:
 #%% Augment from other data
 
 
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+#          TESTING
+#############################################################
+if 0:
+    #dfs['application_train']['NAME_TYPE_SUITE'].unique()
+    dfs['application_train']['NAME_TYPE_SUITE'].value_counts()
+    sum(dfs['application_train']['NAME_TYPE_SUITE'].isnull())
+    data_mapper = skpd.DataFrameMapper([
+        ("NAME_TYPE_SUITE", [skpd.CategoricalImputer(),sk.preprocessing.LabelBinarizer()]),
+    ], df_out=True)
         
-#%% Custom Imputation for 1D, testing here
+    df_trf = data_mapper.fit_transform(dfs.to_frame().copy())
+    df_trf_head = df_trf.head()
+
+if 0:
+    class Imputer1Dtest(sk.preprocessing.Imputer):
+        """
+        A simple subclass on Imputer to avoid having to make a single column 2D. 
+        """
+        def fit(self, X, y=None):
+            X2 = np.expand_dims(X, axis=1)
+            # Call the Imputer as normal
+            return super(Imputer1Dtest, self).fit(X2, y=None) 
+            
+        def transform(self, X, y=None):
+            X2 = np.expand_dims(X, axis=1)
+            # Return the result
+            return super(Imputer1Dtest, self).transform(X2) 
+
+#        def fit_transform(self, X, y=None,**fit_params):
+#            #X2 = np.expand_dims(X, axis=1)
+#            # Return the result
+#            return self.fit(X, **fit_params).transform(X)
+#            #return super(Imputer1Dtest, self).fit_transform(X) 
+
+    this_transformer_test = sk.preprocessing.StandardScaler()
+    this_transformer_test = Imputer1Dtest()
+    this_transformer_test = exergyml_transformers.Imputer1D()
+    r1 = this_transformer_test.fit(dfs['application_train']['CNT_CHILDREN'])
+    
+    r2 = this_transformer_test.fit_transform(dfs['application_train']['CNT_CHILDREN'])
+
+#%% OLD DELETE!
+if 0:
+    #
+    
+    def map_seperate(tr_steps):
+        data_mapper1 = skpd.DataFrameMapper([
+            ('CNT_CHILDREN', 	    tr_steps),
+            ('AMT_INCOME_TOTAL', 	tr_steps),
+            ('AMT_CREDIT', 	        tr_steps),
+            ('AMT_ANNUITY', 	    tr_steps),
+            ('AMT_GOODS_PRICE', 	tr_steps),
+        ], df_out=True)
+            
+        df_trf2 = data_mapper1.fit_transform(dfs['application_train'])
+        df_trf2_head = df_trf2.head()
+        return df_trf2
         
+    
+    def map_together(cols,tr_steps):
+      
+        data_mapperALL = skpd.DataFrameMapper([
+            (cols, 	    tr_steps),
+        ], df_out=True)
+            
+        df_trfALL = data_mapperALL.fit_transform(dfs['application_train'])
+        df_trfALL_head = df_trfALL.head()        
+        return df_trfALL
+    
+    
+    my_cols = ['CNT_CHILDREN',
+        'AMT_INCOME_TOTAL',
+        'AMT_CREDIT',
+        'AMT_ANNUITY',
+        'AMT_GOODS_PRICE',]
+    #my_cols = ['CNT_CHILDREN']  
+    
+    #my_tr_steps1D=[Imputer1Dtest()]
+    #my_tr_steps2D=[sk.preprocessing.Imputer(),sk.preprocessing.StandardScaler()]
+    my_tr_steps2D=[exergyml_transformers.Imputer1D(),sk.preprocessing.StandardScaler()]
+    tr_steps = my_tr_steps2D
+    cols=my_cols
+    #my_tr_steps2D=[Imputer1D(),sk.preprocessing.StandardScaler()]
+    res_seperate = map_seperate(my_tr_steps2D)
+    res_together = map_together(my_cols,my_tr_steps2D)
 
-#dfs['application_test']['AMT_ANNUITY']
-#this_imputer = sk.preprocessing.Imputer()
-##this_imputer.fit(dfs['application_test']['AMT_ANNUITY'])
-#this_imputer.fit([dfs['application_test']['AMT_ANNUITY']])
-#
-#my_imputer = Imputer1D()
-##this_imputer.fit(dfs['application_test']['AMT_ANNUITY'])
-#my_imputer.fit(dfs['application_test']['AMT_ANNUITY'])
-#res = my_imputer.transform(dfs['application_test']['AMT_ANNUITY'])
 
+#%% OLD DELETE!
+# Basic test
+data_3 = pd.DataFrame({'age': [1, np.nan, 3], 'biscuit' : [10000, 1002342, 2345256]})
 
-#%%
+mapper3 = skpd.DataFrameMapper([
+    (['age'], [sk.preprocessing.Imputer(),sk.preprocessing.StandardScaler()]),
+    (['biscuit'], [sk.preprocessing.Imputer(),sk.preprocessing.StandardScaler()]),
+    ])
+
+mapper3.fit_transform(data_3)
+
+#%% OLD DELETE!
+# Custom Imputation for 1D, testing here
+        
+if 0:
+    dfs['application_test']['AMT_ANNUITY']
+    this_imputer = sk.preprocessing.Imputer()
+    #this_imputer.fit(dfs['application_test']['AMT_ANNUITY'])
+    this_imputer.fit([dfs['application_test']['AMT_ANNUITY']])
+    
+    my_imputer = Imputer1D()
+    #this_imputer.fit(dfs['application_test']['AMT_ANNUITY'])
+    my_imputer.fit(dfs['application_test']['AMT_ANNUITY'])
+    res = my_imputer.transform(dfs['application_test']['AMT_ANNUITY'])
+    
+
+#%% OLD DELETE!
 if 0:
     df = trf_plans['application_train']
         
@@ -192,11 +295,4 @@ if 0:
     #dir(data_mapper)
     for step in data_mapper.features:
         print("{:30} {}".format(step[0], step[1]))
-
-#%%
-#df_out = data_mapper.fit_transform(df_app.copy())
-#df_out_head = df_out.head()
-
-
-#%%
 

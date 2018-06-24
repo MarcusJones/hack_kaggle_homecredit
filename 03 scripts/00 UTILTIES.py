@@ -9,6 +9,11 @@ import os
 import yaml
 import sys
 
+# Extra encoders!
+#http://contrib.scikit-learn.org/categorical-encoding/
+import category_encoders as ce
+
+
 #%% Logging
 import logging
 #Delete Jupyter notebook root logger handler

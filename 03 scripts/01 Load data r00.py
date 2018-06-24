@@ -5,6 +5,11 @@ from datetime import datetime
 
 import pandas as pd
 
+# %% 
+print("NOTE: Faster loading!!!")
+#data.to_hdf(path + '/data.h5', 'data')
+#data = pd.read_hdf(path + '/data.h5',  'data')
+
 #%% ===========================================================================
 #  Data source and paths
 # =============================================================================
@@ -64,21 +69,7 @@ for k in dfs:
 train_Y = dfs['application_train'].TARGET
 dfs['application_train'] = dfs['application_train'].drop('TARGET', 1)
 
-
-#%%
-if 0:
-    #dfs['application_train']['NAME_TYPE_SUITE'].unique()
-    dfs['application_train']['NAME_TYPE_SUITE'].value_counts()
-    sum(dfs['application_train']['NAME_TYPE_SUITE'].isnull())
-    
-    data_mapper = skpd.DataFrameMapper([
-        ("NAME_TYPE_SUITE", [skpd.CategoricalImputer(),sk.preprocessing.LabelBinarizer()]),
-        #("NAME_TYPE_SUITE", ),
-    ], df_out=True)
-        
-    df_trf = data_mapper.fit_transform(dfs['application_train']['NAME_TYPE_SUITE'].to_frame().copy())
-    df_trf_head = df_trf.head()
-        
+       
 #%% Create a summary of each dataframe and their columns
 if 0:
     df_summaries = dict()
