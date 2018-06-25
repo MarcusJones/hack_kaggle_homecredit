@@ -36,6 +36,7 @@ import sklearn.cross_validation
 import sklearn.kernel_approximation
 import sklearn.linear_model
 import sklearn.grid_search 
+import sklearn.ensemble 
 #import pickle
 #sklearn.__version__
 import sklearn.externals

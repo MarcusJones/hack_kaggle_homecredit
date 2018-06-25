@@ -1,5 +1,5 @@
 #%% Smaller subset for gridsearch
-SAMPLE_FRAC = 1
+SAMPLE_FRAC = 0.3
 SAMPLE_SIZE = int(len(train_X)*SAMPLE_FRAC)
 #train_X.sample(SAMPLE_SIZE)
 #sample_rows = pd.Series(train_X.index).sample(SAMPLE_SIZE).astype(str).values
@@ -80,7 +80,7 @@ submit['TARGET'] = predicted
 submit.head()
 
 # Save the submission to a csv file
-submit.to_csv('log_reg_baseline5.csv', index = False)
+submit.to_csv('log_reg_baseline7.csv', index = False)
 
 #%% Results on TEST
 
