@@ -47,100 +47,122 @@ for k in trf_plans:
     
 #%%
 # loop over every column in the aligned train and test dfs
-columnsequal = dfs.application_train.columns == dfs.application_train.columns
-assert columnsequal.all()
 
-col = 'NAME_CONTRACT_TYPE'
-col = 'CNT_CHILDREN'
-
-this_plan = list()
-for col in dfs.application_train.columns:
-    # Is this column in the original data? 
-    flg_original_col = col in trf_plans['application_train']['df']['column name'].values
+def generate_mapper():
+    columnsequal = dfs.application_train.columns == dfs.application_train.columns
+    assert columnsequal.all()
     
-    # Is this column kept?
-    if flg_original_col:
-        # There must be an easier way here;
-        this_col_def = trf_plans['application_train']['df'].loc[trf_plans['application_train']['df']['column name'] == col]
-        flg_kept = this_col_def['Keep'].fillna(0).astype(bool).values[0]
-
-    # If original and kept, are there transformers applied?
-    if flg_original_col and flg_kept:
-        # Select only Transformer columsn
-        trf_cols = [col for col in this_col_def if col.startswith('Transformer')]
-        # Get the transformers as a list
-        trf_list = this_col_def.loc[:,trf_cols].fillna(value="").values.tolist()[0]
-        trfs_list = [t for t in trf_list if t]
-        assert len(trfs_list) >= 1
-        if len(trfs_list)==1 and trfs_list[0] == 'Keep Unchanged':
-            trfs_list = [None]
-        elif len(trfs_list)==1 and trfs_list[0] == 'Default':
-            trfs_list = ['Default']
+    col = 'NAME_CONTRACT_TYPE'
+    col = 'CNT_CHILDREN'
+    col = 'FLAG_DOCUMENT_2'
+    
+    this_plan = list()
+    for col in dfs.application_train.columns:
+        flg_kept = False
+        # Is this column in the original data? 
+        flg_original_col = col in trf_plans['application_train']['df']['column name'].values
+        
+        # Is this column kept?
+        if flg_original_col:
+            # There must be an easier way here;
+            this_col_def = trf_plans['application_train']['df'].loc[trf_plans['application_train']['df']['column name'] == col]
+            flg_kept = this_col_def['Keep'].fillna(0).astype(bool).values[0]
+    
+        # If original and kept, are there transformers applied?
+        if flg_original_col and flg_kept:
+            # Select only Transformer columsn
+            trf_cols = [col for col in this_col_def if col.startswith('Transformer')]
+            # Get the transformers as a list
+            trf_list = this_col_def.loc[:,trf_cols].fillna(value="").values.tolist()[0]
+            trfs_list = [t for t in trf_list if t]
+            assert len(trfs_list) >= 1
+            if len(trfs_list)==1 and trfs_list[0] == 'Keep Unchanged':
+                trfs_list = [None]
+            elif len(trfs_list)==1 and trfs_list[0] == 'Default':
+                trfs_list = ['Default']
+            else:
+                trfs_list = [TRANSFORMER_MAPPING[this_t]() for this_t in trfs_list]
         else:
-            trfs_list = [TRANSFORMER_MAPPING[this_t]() for this_t in trfs_list]
-    else:
-        trfs_list = [None]
-
-    # Keep all new columns
-    if not flg_original_col:
-        flg_kept = True
-
-    if 'Default' in trfs_list or not flg_original_col:
-        # Get the steps
-        this_dtype = str(dfs.application_train[col].dtype)
-        this_pipe = DEFAULT_PIPES[this_dtype]
-        # Instantiate the steps
-        trfs_list = [trf() for trf in this_pipe]
-
-    trfs_list_strings = [t.__class__.__name__ for t in trfs_list]
-    print("{:50}  keep: {:1}, dtype: {:10}, original: {:1}, transformers: {}".format(col,
-          flg_kept,
-          str(dfs.application_train[col].dtype),
-          flg_original_col,
-          trfs_list_strings,
-          )
+            trfs_list = [None]
     
-    )
-    this_plan.append([col,trfs_list])
+        # Keep all new columns by default
+        if not flg_original_col:
+            flg_kept = True
+    
+        if 'Default' in trfs_list or not flg_original_col:
+            # Get the steps
+            this_dtype = str(dfs.application_train[col].dtype)
+            this_pipe = DEFAULT_PIPES[this_dtype]
+            # Instantiate the steps
+            trfs_list = [trf() for trf in this_pipe]
+        
+        #if trfs_list
+        
+        trfs_list_strings = [t.__class__.__name__ for t in trfs_list]
+    
+        if None == trfs_list[0]:
+            trfs_list = None
+        
+        print("{:50}  keep: {:1}, dtype: {:10}, original: {:1}, transformers: {}".format(col,
+              flg_kept,
+              str(dfs.application_train[col].dtype),
+              flg_original_col,
+              trfs_list_strings,
+              )
+        
+        )
+        
+        
+        if flg_kept:
+            this_plan.append([col,trfs_list])
+                
+    return this_plan
 
-#convert_plan_pipeline(this_plan)
-
-super_mapper = skpd.DataFrameMapper(this_plan, df_out=True)
+super_plan = generate_mapper()
+super_mapper = skpd.DataFrameMapper(super_plan, df_out=True)
 
 #%% Copy the plan from TRAIN to TEST
 #trf_plans['application_test'] = trf_plans['application_train']
 #logging.debug("Copied transformation plan from application_train to application_test".format())
 
 #%% Overall plan
-for k in trf_plans:
-    print(k)
-    if trf_plans[k]['pipeline']:
-        this_pipeline = trf_plans[k]['pipeline']
-        for step in this_pipeline.features:
-            col=step[0]
-            trfs = step[1]
-            if trfs:
-                trf_string = " > ".join([t.__class__.__name__ for t in trfs])
-            else:
-                trf_string = "KEEP"
-            logging.debug("{:30} {}".format(col,trf_string))
+def print_overall():
+    for i,step in enumerate(super_mapper.features):
+        col=step[0]
+        trfs = step[1]
+        if trfs:
+            trf_string = " > ".join([t.__class__.__name__ for t in trfs])
+        else:
+            trf_string = "KEEP"
+        logging.debug("{:4} {:50} {}".format(i,col,trf_string))
 
-            #print()#
-#            #print("\t{:>25} -> ".format(step['column name']),end="")
-#            if step['transformations']:
-#                for trf in step['transformations']:
-#                    #print(trf)
-#                    print(trf.__class__.__name__, end="")
-#            else:
-#                print("(Keep)", end="")
-#            print()
+print_overall()
 
+#%% Apply mapper
+train_X = super_mapper.fit_transform(dfs.application_train)
+test_X  = super_mapper.fit_transform(dfs.application_test)
 
-#trf_plans['application_train']['pipeline'].features[1][1][0].__class__.__name__
+#%% Ensure alignment again
+train_X, test_X = train_X.align(test_X, join = 'inner', axis = 1)
 
+#%% DONE HERE - DELETE UNUSED
+logging.info("******************************")
 
-#%% Augment from other data
-
+del_vars =[
+        "dfs",
+        "k",
+        'trf_plans',
+        'file_list',
+        'super_plan'
+        ]
+cnt = 0
+for name in dir():
+    if name in del_vars:
+        cnt+=1
+        del globals()[name]
+logging.info(f"Removed {cnt} variables from memory")
+del cnt, name, del_vars
+gc.collect()
 
 #%% GRAVEYARD
 
@@ -180,60 +202,61 @@ if 0:
 
 
 #%% OLD Process the plans into pipelines
-def convert_plan_pipeline(trf_plan):
-    """
-    Given a dataframe listing columns and transformers, convert each row into a
-    transformer pipeline step, and return the entire list of steps (pipeline)
-    """
-    logging.debug("Processing plan for {}".format(k))
+if 0:
+    def convert_plan_pipeline(trf_plan):
+        """
+        Given a dataframe listing columns and transformers, convert each row into a
+        transformer pipeline step, and return the entire list of steps (pipeline)
+        """
+        logging.debug("Processing plan for {}".format(k))
+        
+        pipeline = list()
     
-    pipeline = list()
-
-    # Get the df
-    this_df = trf_plans[k]['df'] 
-    # Get the transformer column indices
-    trf_cols = [col for col in this_df if col.startswith('Transformer')]
-    # Kept columns indices
-    kept_cols = this_df['Keep'] == 1
-    # The overall plan, as a DF
-    transformation_plan = this_df.loc[kept_cols,['column name']+trf_cols]
+        # Get the df
+        this_df = trf_plans[k]['df'] 
+        # Get the transformer column indices
+        trf_cols = [col for col in this_df if col.startswith('Transformer')]
+        # Kept columns indices
+        kept_cols = this_df['Keep'] == 1
+        # The overall plan, as a DF
+        transformation_plan = this_df.loc[kept_cols,['column name']+trf_cols]
+        
+        # Iterate over each column definition
+        for i,transformers in transformation_plan.iterrows():
+            
+            # This is the template for the column step:
+            pipeline_step = dict()
+            pipeline_step["column name"] = None
+            pipeline_step["transformations"] = list()        
+            
+            # 
+            trfs_list = list(transformers.fillna(value=""))
+            trfs_list = [t for t in trfs_list if t]
+            pipeline_step["column name"] = trfs_list.pop(0)
+            
+            if all(t == ''for t in trfs_list):
+                pipeline_step["transformations"] = None
+            elif any(t == 'Default' for t in trfs_list):
+                #print(pipeline_step["column name"])
+                #print(trfs_list)
+                assert len(trfs_list) == 1
+                assert trfs_list.pop() == 'Default'
+                #print()
+                #TRANSFORMER_MAPPING[this_t]
+            else:
+                trfs = [TRANSFORMER_MAPPING[this_t]() for this_t in trfs_list if this_t]
+                pipeline_step["transformations"] = trfs
+            
+            logging.debug("{:30} {}".format(pipeline_step["column name"],pipeline_step["transformations"]))        
+            pipeline.append(pipeline_step)
+         
+        return pipeline
     
-    # Iterate over each column definition
-    for i,transformers in transformation_plan.iterrows():
-        
-        # This is the template for the column step:
-        pipeline_step = dict()
-        pipeline_step["column name"] = None
-        pipeline_step["transformations"] = list()        
-        
-        # 
-        trfs_list = list(transformers.fillna(value=""))
-        trfs_list = [t for t in trfs_list if t]
-        pipeline_step["column name"] = trfs_list.pop(0)
-        
-        if all(t == ''for t in trfs_list):
-            pipeline_step["transformations"] = None
-        elif any(t == 'Default' for t in trfs_list):
-            #print(pipeline_step["column name"])
-            #print(trfs_list)
-            assert len(trfs_list) == 1
-            assert trfs_list.pop() == 'Default'
-            #print()
-            #TRANSFORMER_MAPPING[this_t]
-        else:
-            trfs = [TRANSFORMER_MAPPING[this_t]() for this_t in trfs_list if this_t]
-            pipeline_step["transformations"] = trfs
-        
-        logging.debug("{:30} {}".format(pipeline_step["column name"],pipeline_step["transformations"]))        
-        pipeline.append(pipeline_step)
-     
-    return pipeline
-
-# Loop over each DF, and apply the plan conversion
-#for k in trf_plans:
-#    trf_plans[k]['pipeline_steps'] = convert_plan_pipeline(trf_plans[k]['df'])
-
-
+    # Loop over each DF, and apply the plan conversion
+    #for k in trf_plans:
+    #    trf_plans[k]['pipeline_steps'] = convert_plan_pipeline(trf_plans[k]['df'])
+    
+    
 
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -326,14 +349,15 @@ if 0:
 
 #%% OLD DELETE!
 # Basic test
-data_3 = pd.DataFrame({'age': [1, np.nan, 3], 'biscuit' : [10000, 1002342, 2345256]})
-
-mapper3 = skpd.DataFrameMapper([
-    (['age'], [sk.preprocessing.Imputer(),sk.preprocessing.StandardScaler()]),
-    (['biscuit'], [sk.preprocessing.Imputer(),sk.preprocessing.StandardScaler()]),
-    ])
-
-mapper3.fit_transform(data_3)
+if 0: 
+    data_3 = pd.DataFrame({'age': [1, np.nan, 3], 'biscuit' : [10000, 1002342, 2345256]})
+    
+    mapper3 = skpd.DataFrameMapper([
+        (['age'], [sk.preprocessing.Imputer(),sk.preprocessing.StandardScaler()]),
+        (['biscuit'], [sk.preprocessing.Imputer(),sk.preprocessing.StandardScaler()]),
+        ])
+    
+    mapper3.fit_transform(data_3)
 
 #%% OLD DELETE!
 # Custom Imputation for 1D, testing here

@@ -9,9 +9,45 @@ import os
 import yaml
 import sys
 
-# Extra encoders!
-#http://contrib.scikit-learn.org/categorical-encoding/
-import category_encoders as ce
+# =============================================================================
+# Standard imports
+# =============================================================================
+import os
+import logging
+import datetime
+import gc
+
+# =============================================================================
+# External imports - reimported for code completion! 
+# =============================================================================
+print_imports()
+
+# Import again for code completion!
+import pandas as pd 
+import numpy as np 
+import matplotlib as mpl
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+import sklearn as sk
+import sklearn
+import sklearn.linear_model
+import sklearn.cross_validation
+import sklearn.kernel_approximation
+import sklearn.linear_model
+import sklearn.grid_search 
+#import pickle
+#sklearn.__version__
+import sklearn.externals
+# to make this notebook's output stable across runs
+np.random.seed(42)
+
+# Ignore useless warnings (see SciPy issue #5998)
+import warnings
+warnings.filterwarnings(action="ignore", module="scipy", message="^internal gelsd")
+warnings.filterwarnings(action="ignore", module="pandas", message="^internal gelsd")
+warnings.simplefilter(action='ignore', category=FutureWarning)
+#warnings.simplefilter(action='ignore', category=warnings)
 
 
 #%% Logging
@@ -60,9 +96,14 @@ PATH_PROJECT_ROOT = r"/home/batman/git/hack_kaggle_homecredit/03 scripts"
 #%%
 exergyml_transformers.Imputer1D
 
+#%%
+exergyml_util_other.target_corrs
 
 #%%
-exergyml_util_other.strfdelta
+exergyml_util_other.agg_numeric
+
+#%% Categorical counts
+exergyml_util_other.count_categorical
 
 #%% Missing vals
 exergyml_util_other.missing_values_table

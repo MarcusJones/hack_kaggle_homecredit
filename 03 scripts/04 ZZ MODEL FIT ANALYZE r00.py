@@ -1,23 +1,10 @@
-#%% Split into test/train
-if 0:
-    train, test = sk.cross_validation.train_test_split(dfs_transformed['application_train'], test_size=0.20, random_state=42)
-    print(len(train), len(test))
-    
-    train_X = train.drop('TARGET', 1)
-    train_Y = train.TARGET
-    test_X = test.drop('TARGET',1)
-    test_Y = test.TARGET
-    
-    del train, test
-    
 #%% Smaller subset for gridsearch
-SAMPLE_FRAC = 0.3
+SAMPLE_FRAC = 1
 SAMPLE_SIZE = int(len(train_X)*SAMPLE_FRAC)
-train_X.sample(SAMPLE_SIZE)
+#train_X.sample(SAMPLE_SIZE)
 #sample_rows = pd.Series(train_X.index).sample(SAMPLE_SIZE).astype(str).values
 sample_rows = pd.Series(train_X.index).sample(SAMPLE_SIZE)
 logging.debug("Subset for Grid Search, {} rows".format(len(sample_rows)))
-
 
 #%% Final sizing
 
