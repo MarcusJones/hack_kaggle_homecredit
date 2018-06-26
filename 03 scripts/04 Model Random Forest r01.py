@@ -26,10 +26,10 @@ clf = sk.ensemble.RandomForestClassifier(n_estimators=10,
 
 ############ Parameter grid #################
 param_grid = {
-    'n_estimators':[100,300,400,600],
-    'max_depth':[5,10,15],
-    'min_samples_split':[5,10],
-    'min_samples_leaf':[3,6],
+    'n_estimators':[1000,1500,3000,6000,10000],
+    'max_depth':[15,20,30,60],
+    'min_samples_split':[10,20,50,100],
+    'min_samples_leaf':[16,32,64],
 }
 ############################################
 

@@ -1,5 +1,5 @@
 #%% Smaller subset for gridsearch
-SAMPLE_FRAC = 0.3
+SAMPLE_FRAC = 0.20
 SAMPLE_SIZE = int(len(train_X)*SAMPLE_FRAC)
 #train_X.sample(SAMPLE_SIZE)
 #sample_rows = pd.Series(train_X.index).sample(SAMPLE_SIZE).astype(str).values
@@ -66,12 +66,16 @@ if 0:
 
 
 #%% Do the final fit on the BEST estimator
+start = datetime.datetime.now()
 predicted = clf_grid_BEST.fit(train_X, train_Y)
+logging.debug("Elapsed H:m:s: {}".format(datetime.datetime.now()-start))
 
 
 #%% Predict on Test set
 # NB we only want the defaulters column! 
+start = datetime.datetime.now()
 predicted = clf_grid_BEST.predict_proba(test_X)[:,1]
+logging.debug("Elapsed H:m:s: {}".format(datetime.datetime.now()-start))
 
 #%% Submission dataframe
 submit = test_X[['SK_ID_CURR']].astype(int)
@@ -80,7 +84,7 @@ submit['TARGET'] = predicted
 submit.head()
 
 # Save the submission to a csv file
-submit.to_csv('log_reg_baseline7.csv', index = False)
+submit.to_csv('log_reg_baseline10.csv', index = False)
 
 #%% Results on TEST
 

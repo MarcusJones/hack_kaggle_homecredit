@@ -1,5 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+import sys
+util_path = r"/home/alfred/git/py_ExergyUtilities"
+sys.path.append(util_path)
+if importlib.util.find_spec("ExergyUtilities"):         import ExergyUtilities as exergy
 
 from MachineLearning import util_other as exergyml_util_other
 from MachineLearning import util_sk_transformers as exergyml_transformers
@@ -86,6 +90,10 @@ TITLE_FONT = {'fontname':'helvetica'}
 
 PATH_DATA_ROOT = r"/home/batman/Dropbox/DATA/Kaggle Housing Credit"
 PATH_PROJECT_ROOT = r"/home/batman/git/hack_kaggle_homecredit/03 scripts"
+
+PATH_DATA_ROOT = r"/home/alfred/Dropbox/DATA/Kaggle Housing Credit"
+PATH_PROJECT_ROOT = r"/home/alfred/git/hack_kaggle_homecredit/03 scripts"
+
 #PATH_OUT = r"/home/batman/git/hack_sfpd1/Out"
 #PATH_OUT_KDE = r"/home/batman/git/hack_sfpd1/out_kde"
 #PATH_REPORTING = r"/home/batman/git/hack_sfpd1/Reporting"

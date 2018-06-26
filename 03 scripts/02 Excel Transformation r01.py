@@ -126,8 +126,8 @@ super_mapper = skpd.DataFrameMapper(super_plan, df_out=True)
 #logging.debug("Copied transformation plan from application_train to application_test".format())
 
 #%% Overall plan
-def print_overall():
-    for i,step in enumerate(super_mapper.features):
+def print_overall(data_mapper):
+    for i,step in enumerate(data_mapper.features):
         col=step[0]
         trfs = step[1]
         if trfs:
@@ -136,7 +136,7 @@ def print_overall():
             trf_string = "KEEP"
         logging.debug("{:4} {:50} {}".format(i,col,trf_string))
 
-print_overall()
+print_overall(super_mapper)
 
 #%% Apply mapper
 train_X = super_mapper.fit_transform(dfs.application_train)

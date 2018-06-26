@@ -46,6 +46,6 @@ clf_grid = sk.grid_search.GridSearchCV(estimator=clf,
                                            param_grid=param_grid,cv=cv_folds,
                                            n_jobs=-1, 
                                            scoring='roc_auc',
-                                           verbose=4)
+                                           verbose=11)
 
 ###############################################################################
