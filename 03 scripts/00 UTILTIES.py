@@ -107,6 +107,8 @@ elif os.path.exists(PC_PATH_PROJECT_ROOT):
 else:
     raise
 
+PATH_OFFLINE = r"/media/alfred/Alpha WD20/Kaggle Home Credit offline"
+
 #PATH_OUT = r"/home/batman/git/hack_sfpd1/Out"
 #PATH_OUT_KDE = r"/home/batman/git/hack_sfpd1/out_kde"
 #PATH_REPORTING = r"/home/batman/git/hack_sfpd1/Reporting"
