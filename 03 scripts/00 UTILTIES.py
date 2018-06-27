@@ -88,11 +88,24 @@ LANDSCAPE_A4 = (11.69,8.27)
 TITLE_FONT = {'fontname':'helvetica'}
 
 
-PATH_DATA_ROOT = r"/home/batman/Dropbox/DATA/Kaggle Housing Credit"
-PATH_PROJECT_ROOT = r"/home/batman/git/hack_kaggle_homecredit/03 scripts"
+LAPTOP_PATH_DATA_ROOT = r"/home/batman/Dropbox/DATA/Kaggle Housing Credit"
+PC_PATH_DATA_ROOT = r"/home/alfred/Dropbox/DATA/Kaggle Housing Credit"
 
-PATH_DATA_ROOT = r"/home/alfred/Dropbox/DATA/Kaggle Housing Credit"
-PATH_PROJECT_ROOT = r"/home/alfred/git/hack_kaggle_homecredit/03 scripts"
+if os.path.exists(LAPTOP_PATH_DATA_ROOT):
+    PATH_DATA_ROOT = LAPTOP_PATH_DATA_ROOT
+elif os.path.exists(PC_PATH_DATA_ROOT):
+    PATH_DATA_ROOT = PC_PATH_DATA_ROOT
+else:
+    raise
+
+LAPTOP_PATH_PROJECT_ROOT = r"/home/batman/git/hack_kaggle_homecredit/03 scripts"
+PC_PATH_PROJECT_ROOT = r"/home/alfred/git/hack_kaggle_homecredit/03 scripts"
+if os.path.exists(LAPTOP_PATH_DATA_ROOT):
+    PATH_PROJECT_ROOT = LAPTOP_PATH_PROJECT_ROOT
+elif os.path.exists(PC_PATH_PROJECT_ROOT):
+    PATH_PROJECT_ROOT = PC_PATH_PROJECT_ROOT
+else:
+    raise
 
 #PATH_OUT = r"/home/batman/git/hack_sfpd1/Out"
 #PATH_OUT_KDE = r"/home/batman/git/hack_sfpd1/out_kde"

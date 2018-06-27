@@ -45,9 +45,8 @@ class AttrDict(dict):
 
 #%% Load each df in the directory, convert to categorical
 
-#aaaDataSubset = True
 #DATA_SAMPLE = 0.3
-
+#aaaDataSubset = True
 DATA_SAMPLE = 1
 def get_all_data(file_dict,sample_frac):
     dfs = AttrDict()
